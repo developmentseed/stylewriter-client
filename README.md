@@ -7,7 +7,7 @@
               __/ |                                    
              |___/                                     
     
-    ![Señor Style](http://developmentseed.github.com/stylewriter-client/monster.png)
+![Señor Style](http://developmentseed.github.com/stylewriter-client/monster.png)
 
     stylewriter-client is a library of useful
     code for interactive maps. This version
