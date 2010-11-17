@@ -11,3 +11,6 @@
     code for interactive maps. This version
     uses OpenLayers as a mapping backend.
 
+    Includes jQuery-JSONP, available at
+    http://code.google.com/p/jquery-jsonp/
+
