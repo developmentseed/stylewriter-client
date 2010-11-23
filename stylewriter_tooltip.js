@@ -23,39 +23,47 @@ StyleWriterTooltips.click = function(feature) {
   return;
 };
 
-StyleWriterTooltips.getToolTip = function(feature) {
-  var text = "<div class='openlayers-tooltip'>";
-  if (feature.name) {
-    text += "<div class='openlayers-tooltip-name'>" + feature.name + '</div>';
+StyleWriterTooltips.getToolTip = function(feature, context, index) {
+  var tooltip = $('div.openlayers-tooltip-' + index + ':not(.removed)', $(context));
+  if (tooltip.size() === 0) {
+    tooltip = $("<div class='openlayers-tooltip openlayers-tooltip-"+index+"'><div class='openlayers-tooltip-name'></div><div class='openlayers-tooltip-description'></div></div>");
+    $(context).append(tooltip);
   }
-  if (feature.description) {
-    text += "<div class='openlayers-tooltip-description'>" +
-        feature.description + '</div>';
+  $('div.openlayers-tooltip-name', tooltip).html(feature.name || '');
+  $('div.openlayers-tooltip-description', tooltip).html(feature.description || '');
+
+  // Hide any active tooltips for layers beneath this one.
+  for (var i = (index - 1); i > 0; i--) {
+    var fallback = $('div.openlayers-tooltip-' + i + ':not(.removed)');
+    if (fallback.size() > 0) {
+      fallback.addClass('hidden').hide();
+    }
   }
-  text += '</div>';
-  return $(text);
+
+  return tooltip;
 };
 
-StyleWriterTooltips.select = function(feature, layer) {
-  var tooltip = StyleWriterTooltips.getToolTip(feature);
+StyleWriterTooltips.select = function(feature, layer, evt) {
+  var index = $.inArray(layer, layer.map.layers);
+  var tooltip = StyleWriterTooltips.getToolTip(feature, layer.map.div, index);
   $(layer.map.div).css('cursor', 'pointer');
-  $(tooltip).data('layername', layer.name);
-  $(layer.map.div).append(tooltip);
-};
-
-StyleWriterTooltips.positionedSelect = function(feature, layer, evt) {
-  var tooltip = StyleWriterTooltips.getToolTip(feature);
-  // var point  = new OpenLayers.LonLat(feature.geometry.x, feature.geometry.y);
-  // var offset = feature.layer.getViewPortPxFromLonLat(point);
-  // $(tooltip).css({zIndex: '1000', position: 'absolute',
-  //   left: evt.pageX, top: evt.pageY});
-  $('body').append(tooltip);
 };
 
 StyleWriterTooltips.unselect = function(feature, layer) {
+  var index = $.inArray(layer, layer.map.layers);
+
   $(layer.map.div).css('cursor', 'default');
-  $(layer.map.div).children('div.openlayers-tooltip').filter(
-      function() {
-          return $(this).data('layername') == layer.name;
-      }).fadeOut('fast', function() { $(this).remove(); });
+  $(layer.map.div).children('div.openlayers-tooltip-' + index)
+    .addClass('removed')
+    .fadeOut('fast', function() { $(this).remove(); });
+
+  // Iterate through any active tooltips on layers beneath this one and show
+  // the highest one found.
+  for (var i = (index - 1); i > 0; i--) {
+    var fallback = $('div.openlayers-tooltip-' + i + ':not(.removed)');
+    if (fallback.size() > 0) {
+      fallback.removeClass('hidden').show();
+      break;
+    }
+  }
 };

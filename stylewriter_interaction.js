@@ -66,6 +66,7 @@ var StyleWriterUtil = {
  */
 OpenLayers.Control.StyleWriterInteraction =
     OpenLayers.Class(OpenLayers.Control, {
+    feature: {},
     format: null,
     handlerOptions: null,
     handlers: null,
@@ -251,8 +252,8 @@ OpenLayers.Control.StyleWriterInteraction =
             feature = this.getPointFeature(sevt, tiles[t]);
           }
           if (feature) {
-            if (feature !== this.feature) {
-              this.feature = feature;
+            if (feature !== this.feature[t]) {
+              this.feature[t] = feature;
               this.callbacks['out'](feature, tiles[t].layer, sevt);
               if (feature) {
                 this.callbacks['over'](feature, tiles[t].layer, sevt);
@@ -261,12 +262,13 @@ OpenLayers.Control.StyleWriterInteraction =
           }
           else {
             this.callbacks['out'](feature, tiles[t].layer, sevt);
-            this.feature = null;
+            this.feature[t] = null;
           }
         }
         else {
           // TODO: figure out better way to do hover-sim
           this.callbacks['out']({}, tiles[t].layer);
+          this.feature[t] = null;
           if (!this.archive[code_string]) {
             try {
               this.archive[code_string] = true;
