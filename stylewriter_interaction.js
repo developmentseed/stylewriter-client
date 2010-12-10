@@ -109,6 +109,13 @@ OpenLayers.Control.StyleWriterInteraction =
       this.handlers.click.setMap(map);
       OpenLayers.Control.prototype.setMap.apply(this, arguments);
       this.activate();
+      // Respond to new layers  for new layers so we can load keymap
+      var that = this;
+      map.events.on({addlayer: function(e) {
+        if (e.layer.CLASS_NAME === 'OpenLayers.Layer.StyleWriter' && typeof e.layer.keymap === 'string') {
+          that.loadKeymap(e.layer);
+        }
+      }});
     },
 
     activate: function() {
@@ -289,6 +296,20 @@ OpenLayers.Control.StyleWriterInteraction =
       else { // GeoJSON
         this.archive[data.code_string] = this.format.read(data.features);
       }
+    },
+
+    loadKeymap: function(layer) {
+      $.jsonp({
+        'url': layer.keymap,
+        context: this,
+        success: function(data) {
+          if (typeof data !== 'undefined') {
+            layer.keymap = layer.options.keymap = data;
+          }
+        },
+        error: function() {},
+        callback: 'keymapCallback'
+      });
     },
 
     CLASS_NAME: 'OpenLayers.Control.StyleWriterInteraction'
